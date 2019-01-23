@@ -1,5 +1,57 @@
 # COUNT MODULE
 
+<br>
+
+## Feature
+
+...
+
+<br>
+
+## Demo
+
+- [https://yama-dev.github.io/js-count-module/examples/](https://yama-dev.github.io/js-count-module/examples/)
+
+<br>
+
+## Installation,Download
+
+- Standalone(CDN) -> [https://cdn.jsdelivr.net/gh/yama-dev/js-count-module@v0.0.1/dist/js-count-module.js](https://cdn.jsdelivr.net/gh/yama-dev/js-count-module@v0.0.1/dist/js-count-module.js)
+
+<br>
+
+## Using
+
+### NPM Usage
+
+``` bash
+# install npm.
+npm install --save-dev js-count-module
+```
+
+``` javascript
+// import.
+import COUNT_MODULE from 'js-count-module';
+```
+
+### Basic Standalone Usage
+
+``` html
+<script src="./js-count-module.js"></script>
+<script>
+  new JS_COUNT_MODULE({
+    date: '2020/1/10 10:00',
+    complete: function(data){
+      console.log(data);
+      var _d = data.diffObjParsed;
+      var _t = _d.d+'[日] '+_d.h+'[時間] '+_d.m+'[分] '+_d.s+'[秒]';
+    }
+  });
+</script>
+```
+
+<br>
+
 ## Dependencies
 
 none
