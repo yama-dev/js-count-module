@@ -3,8 +3,9 @@
 <br>
 
 ## Feature
+utility that can implement count operation.  
+can flexibly count the deadline.
 
-...
 
 <br>
 
@@ -16,7 +17,7 @@
 
 ## Installation,Download
 
-- Standalone(CDN) -> [https://cdn.jsdelivr.net/gh/yama-dev/js-count-module@v0.0.1/dist/js-count-module.js](https://cdn.jsdelivr.net/gh/yama-dev/js-count-module@v0.0.1/dist/js-count-module.js)
+- Standalone(CDN) -> [https://cdn.jsdelivr.net/gh/yama-dev/js-count-module@v0.0.2/dist/js-count-module.js](https://cdn.jsdelivr.net/gh/yama-dev/js-count-module@v0.0.2/dist/js-count-module.js)
 
 <br>
 

@@ -4,7 +4,7 @@ const webpack = require('webpack');
 
 const config = {
   mode: env || 'development',
-  entry: ['babel-polyfill', './src/js-count-module.js'],
+  entry: ['./src/js-count-module.js'],
   output: {
     path: `${__dirname}/dist`,
     filename: 'js-count-module.js',
@@ -15,10 +15,10 @@ const config = {
   module: {
     rules: [
       {
-        enforce: "pre",
+        enforce: 'pre',
         test: /\.(js)$/,
         exclude: /node_modules/,
-        loader: "eslint-loader",
+        loader: 'eslint-loader',
       },
       {
         test: /\.js$/,
@@ -27,7 +27,15 @@ const config = {
             loader: 'babel-loader',
             options: {
               presets: [
-                ['env', {'modules': false}]
+                [
+                  '@babel/preset-env', {
+                    'modules': false,
+                    'targets': {
+                      'ie': '11'
+                    },
+                    'useBuiltIns': 'usage'
+                  }
+                ]
               ]
             }
           }
