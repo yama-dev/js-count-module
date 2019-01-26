@@ -50,9 +50,11 @@
       <code>
         &lt;script&gt;
           new JS_COUNT_MODULE({
-            date: &#039;2020/1/10 10:00&#039;,
+      date: &#039;2020/1/1 10:00&#039;,
             complete: function(data){
               console.log(data);
+        var _d = data.diffObjParsed;
+        var _t = _d.d+&#039;日&#039;+_d.h+&#039;時間&#039;+_d.m+&#039;分&#039;+_d.s+&#039;秒&#039;;
             }
           });
         &lt;/script&gt;</code>
