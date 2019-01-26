@@ -1,28 +1,33 @@
 /*!
  * JS COUNT MODULE (JavaScript Library)
  *   js-count-module.js
- * Version 0.0.3
+ * Version 0.0.4
  * Repository https://github.com/yama-dev/js-count-module
  * Copyright yama-dev
  * Licensed under the MIT license.
  */
 
+/*eslint no-console: "off"*/
+
 export default class JS_COUNT_MODULE {
 
   constructor(options={}){
     let configDefault = {
-      type: 'down',        // 'up'|'down'
-      interval: 1000,      // interval time [ms]
-      autostart: true,     // auto count start flg.
-      nowObj: new Date(),  // now Date object.
-      data: [],            // 'date' and 'complete' for array.
+      type: 'down',       // 'up'|'down'
+      interval: 1000,     // interval time [ms]
+      autostart: true,    // auto count start flg.
+      nowObj: new Date(), // now Date object.
+      data: [],           // 'date' and 'complete' for array.
 
-      date: '',            // ex. '2019/1/23/ 05:35:46'
-      complete: null,      // complete function.
+      date     : '',      // ex. '2019/1/23/ 05:35:46'
+      complete : null,    // complete function.
 
-      countDiffMilliSec: 0,
-      countDiffObj: {},
-      countDiffListObj: {},
+      countDiffMilliSec : 0,
+      countDiffObj      : {},
+      countDiffListObj  : {},
+
+      setObj: new Date(),
+      elapsedTime: 0
     };
 
     // Merge Config Settings.
@@ -31,33 +36,35 @@ export default class JS_COUNT_MODULE {
     // newObjの値を修正
     if(!this.Config.nowObj) this.Config.nowObj = new Date();
 
+    if(this.Config.type == 'up'){
+      this.Config.nowObj.setTime(1);
+      this.Config.date = this.Config.nowObj.getTime();
+    }
+
+    if(!this.Config.data.length && !this.Config.date){
+      try {
+        throw new Error('Not config "date"');
+      } catch (e) {
+        console.log(e.name + ': ' + e.message);
+      }
+      return false;
+    }
+
     if(!this.Config.data.length){
-      this.Config.data = {
-        date: this.Config.date,
-        complete: this.Config.complete 
-      };
-
-      this.Config.countDiffMilliSec = new Date(this.Config.date) - this.Config.nowObj;
-      this.Config.countDiffObj      = JS_COUNT_MODULE.ParseTime2DateObj(this.Config.countDiffMilliSec);
-      this.Config.countDiffListObj  = JS_COUNT_MODULE.ParseTime2DateListObj(this.Config.countDiffMilliSec);
-    } else {
-      let _flg = false;
-      this.Config.data.map((item)=>{
-        if(_flg) return;
-        if( (new Date(item.date) - this.Config.nowObj) > 0 ) {
-          _flg = true;
-          this.Config.date = item.date;
-          this.Config.complete = item.complete;
-
-          this.Config.countDiffMilliSec = new Date(item.date) - this.Config.nowObj;
-          this.Config.countDiffObj      = JS_COUNT_MODULE.ParseTime2DateObj(this.Config.countDiffMilliSec);
-          this.Config.countDiffListObj  = JS_COUNT_MODULE.ParseTime2DateListObj(this.Config.countDiffMilliSec);
+      this.Config.data = [
+        {
+          date: this.Config.date,
+          complete: this.Config.complete 
         }
-      });
+      ];
+      this.UpdateData();
+    } else {
+      this.UpdateData();
     }
 
     if(this.Config.autostart) this.OnComplete();
     if(this.Config.interval > 0) this.Update();
+
   }
 
   static ParseTime2DateObj (time){
@@ -90,14 +97,56 @@ export default class JS_COUNT_MODULE {
     return _obj;
   }
 
+  UpdateData(){
+    let _t = this.Config.nowObj.getTime() + this.Config.elapsedTime;
+    this.Config.setObj.setTime(_t);
+
+    let _flg = false;
+    this.Config.data.map((item)=>{
+      if(_flg) return;
+      if( (new Date(item.date) - this.Config.setObj) >= 0 ) {
+        _flg = true;
+        this.Config.date = item.date;
+        this.Config.complete = item.complete;
+
+        this.Config.countDiffMilliSec = new Date(item.date) - this.Config.setObj;
+        this.Config.countDiffObj      = JS_COUNT_MODULE.ParseTime2DateObj(this.Config.countDiffMilliSec);
+        this.Config.countDiffListObj  = JS_COUNT_MODULE.ParseTime2DateListObj(this.Config.countDiffMilliSec);
+      }
+    });
+  }
+
   Update(){
     setTimeout(()=>{
-      this.Config.countDiffMilliSec = this.Config.countDiffMilliSec - this.Config.interval;
-      this.Config.countDiffObj      = JS_COUNT_MODULE.ParseTime2DateObj(this.Config.countDiffMilliSec);
-      this.Config.countDiffListObj  = JS_COUNT_MODULE.ParseTime2DateListObj(this.Config.countDiffMilliSec);
+
+      // count down.
+      if(this.Config.type == 'up'){
+        // Up.
+        this.Config.countDiffMilliSec = this.Config.countDiffMilliSec + this.Config.interval;
+
+        if(this.Config.interval > 0) this.Config.elapsedTime += this.Config.interval;
+
+        this.Config.countDiffObj      = JS_COUNT_MODULE.ParseTime2DateObj(this.Config.countDiffMilliSec);
+        this.Config.countDiffListObj  = JS_COUNT_MODULE.ParseTime2DateListObj(this.Config.countDiffMilliSec);
+      } else {
+        // Down.
+        this.Config.countDiffMilliSec = this.Config.countDiffMilliSec - this.Config.interval;
+
+        if(this.Config.interval > 0) this.Config.elapsedTime += this.Config.interval;
+
+        if(this.Config.countDiffMilliSec < 0){
+          if(this.Config.data.length) this.UpdateData();
+        }
+
+        this.Config.countDiffObj      = JS_COUNT_MODULE.ParseTime2DateObj(this.Config.countDiffMilliSec);
+        this.Config.countDiffListObj  = JS_COUNT_MODULE.ParseTime2DateListObj(this.Config.countDiffMilliSec);
+      }
 
       this.OnComplete();
-      if(this.Config.interval > 0) this.Update();
+
+      if(this.Config.interval > 0){
+        this.Update();
+      }
     }, this.Config.interval);
   }
 
@@ -107,7 +156,8 @@ export default class JS_COUNT_MODULE {
       complete     : this.Config.complete,
       diffObj      : this.Config.countDiffListObj,
       diffObjParsed: this.Config.countDiffObj,
-      diffMilliSec : this.Config.countDiffMilliSec
+      diffMilliSec : this.Config.countDiffMilliSec,
+      elapsedTime  : this.Config.elapsedTime
     };
     if(this.Config.complete){
       this.Config.complete(_obj);
