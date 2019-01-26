@@ -22,25 +22,21 @@ const config = {
       },
       {
         test: /\.js$/,
-        use: [
-          {
-            loader: 'babel-loader',
-            options: {
-              presets: [
-                [
-                  '@babel/preset-env', {
-                    'modules': false,
-                    'targets': {
-                      'ie': '11'
-                    },
-                    'useBuiltIns': 'usage'
-                  }
-                ]
-              ]
-            }
-          }
-        ],
         exclude: /node_modules/,
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: [
+              [
+                '@babel/preset-env',
+                {
+                  modules: false
+                }
+              ]
+            ],
+            plugins: ['@babel/plugin-transform-object-assign']
+          }
+        }
       }
     ]
   }
