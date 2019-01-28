@@ -18,6 +18,7 @@ export default class JS_COUNT_MODULE {
       autostart: true,    // auto count start flg.
       nowObj: new Date(), // now Date object.
       data: [],           // 'date' and 'complete' for array.
+      equal: true,
 
       date     : '',      // ex. '2019/1/23/ 05:35:46'
       complete : null,    // complete function.
@@ -26,6 +27,7 @@ export default class JS_COUNT_MODULE {
       countDiffObj      : {},
       countDiffListObj  : {},
 
+      equalRacio: 0,
       setObj: new Date(),
       elapsedTime: 0
     };
@@ -35,6 +37,10 @@ export default class JS_COUNT_MODULE {
 
     // newObjの値を修正
     if(!this.Config.nowObj) this.Config.nowObj = new Date();
+
+    // 設定時刻と同じ場合（差がない場合の処理）の設定を修正
+    if(this.Config.equal) this.Config.equalRacio = 0;
+    if(!this.Config.equal) this.Config.equalRacio = 1;
 
     if(this.Config.type == 'up'){
       this.Config.nowObj.setTime(1);
@@ -104,7 +110,7 @@ export default class JS_COUNT_MODULE {
     let _flg = false;
     this.Config.data.map((item)=>{
       if(_flg) return;
-      if( (new Date(item.date) - this.Config.setObj) >= 0 ) {
+      if( (new Date(item.date) - this.Config.setObj) >= this.Config.equalRacio ) {
         _flg = true;
         this.Config.date = item.date;
         this.Config.complete = item.complete;
@@ -134,7 +140,7 @@ export default class JS_COUNT_MODULE {
 
         if(this.Config.interval > 0) this.Config.elapsedTime += this.Config.interval;
 
-        if(this.Config.countDiffMilliSec < 0){
+        if(this.Config.countDiffMilliSec < this.Config.equalRacio){
           if(this.Config.data.length) this.UpdateData();
         }
 
