@@ -1,6 +1,6 @@
 {
   "name": "js-count-module",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "utility that can implement count operation.\ncan flexibly count the deadline.",
   "keywords": [
     "count",
