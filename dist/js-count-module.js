@@ -2,7 +2,7 @@
 /*!
  * JS COUNT MODULE (JavaScript Library)
  *   js-count-module.js
- * Version 0.0.5
+ * Version 0.1.0
  * Repository https://github.com/yama-dev/js-count-module
  * Copyright yama-dev
  * Licensed under the MIT license.
