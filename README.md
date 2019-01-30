@@ -42,10 +42,13 @@ import COUNT_MODULE from 'js-count-module';
 <script>
   new JS_COUNT_MODULE({
     date: '2020/1/10 10:00',
-    complete: function(data){
+    onUpdate: function(data){
       console.log(data);
       var _d = data.diffObjParsed;
       var _t = _d.d+'[日] '+_d.h+'[時間] '+_d.m+'[分] '+_d.s+'[秒]';
+    },
+    onComplete: function(data){
+      console.log(data);
     }
   });
 </script>
