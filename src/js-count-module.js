@@ -1,7 +1,7 @@
 /*!
  * JS COUNT MODULE (JavaScript Library)
  *   js-count-module.js
- * Version 0.0.5
+ * Version 0.1.0
  * Repository https://github.com/yama-dev/js-count-module
  * Copyright yama-dev
  * Licensed under the MIT license.
@@ -18,10 +18,11 @@ export default class JS_COUNT_MODULE {
       autostart: true,    // auto count start flg.
       nowObj: new Date(), // now Date object.
       data: [],           // 'date' and 'complete' for array.
-      equal: true,
+      endstop: true,
 
-      date     : '',      // ex. '2019/1/23/ 05:35:46'
-      complete : null,    // complete function.
+      date       : '',    // ex. '2019/1/23/ 05:35:46'
+      onUpdate   : null,  // update function.
+      onComplete : null,  // complete function.
 
       countDiffMilliSec : 0,
       countDiffObj      : {},
@@ -29,7 +30,11 @@ export default class JS_COUNT_MODULE {
 
       equalRacio: 0,
       setObj: new Date(),
-      elapsedTime: 0
+      elapsedTime: 0,
+
+      state: {
+        updating: true
+      }
     };
 
     // Merge Config Settings.
@@ -37,10 +42,6 @@ export default class JS_COUNT_MODULE {
 
     // newObjの値を修正
     if(!this.Config.nowObj) this.Config.nowObj = new Date();
-
-    // 設定時刻と同じ場合（差がない場合の処理）の設定を修正
-    if(this.Config.equal) this.Config.equalRacio = 0;
-    if(!this.Config.equal) this.Config.equalRacio = 1;
 
     if(this.Config.type == 'up'){
       this.Config.nowObj.setTime(1);
@@ -60,7 +61,8 @@ export default class JS_COUNT_MODULE {
       this.Config.data = [
         {
           date: this.Config.date,
-          complete: this.Config.complete 
+          onUpdate: this.Config.onUpdate,
+          onComplete: this.Config.onComplete
         }
       ];
       this.UpdateData();
@@ -68,8 +70,7 @@ export default class JS_COUNT_MODULE {
       this.UpdateData();
     }
 
-    if(this.Config.autostart) this.OnComplete();
-    if(this.Config.interval > 0) this.Update();
+    if(this.Config.autostart && this.Config.interval > 0) this.Update();
 
   }
 
@@ -110,10 +111,13 @@ export default class JS_COUNT_MODULE {
     let _flg = false;
     this.Config.data.map((item)=>{
       if(_flg) return;
-      if( (new Date(item.date) - this.Config.setObj) >= this.Config.equalRacio ) {
+
+      if( (new Date(item.date) - this.Config.setObj) > this.Config.equalRacio ) {
+
         _flg = true;
-        this.Config.date = item.date;
-        this.Config.complete = item.complete;
+        if(item.date)       this.Config.date = item.date;
+        if(item.onUpdate)   this.Config.onUpdate = item.onUpdate;
+        if(item.onComplete) this.Config.onComplete = item.onComplete;
 
         this.Config.countDiffMilliSec = new Date(item.date) - this.Config.setObj;
         this.Config.countDiffObj      = JS_COUNT_MODULE.ParseTime2DateObj(this.Config.countDiffMilliSec);
@@ -123,50 +127,94 @@ export default class JS_COUNT_MODULE {
   }
 
   Update(){
+
+    this.Config.countDiffObj     = JS_COUNT_MODULE.ParseTime2DateObj(this.Config.countDiffMilliSec);
+    this.Config.countDiffListObj = JS_COUNT_MODULE.ParseTime2DateListObj(this.Config.countDiffMilliSec);
+
+    if(this.Config.elapsedTime > 0) this.checkEndstop();
+
+    // check update or last.
+    if(this.Config.state.updating){
+      this.OnUpdate();
+    } else {
+      this.OnUpdate();
+      this.OnComplete();
+    }
+
+    // Update Data.
+    if(this.Config.countDiffMilliSec <= 0 && this.Config.data.length){
+      this.UpdateData();
+      this.checkEndstop();
+    }
+
     setTimeout(()=>{
 
-      // count down.
-      if(this.Config.type == 'up'){
-        // Up.
-        this.Config.countDiffMilliSec = this.Config.countDiffMilliSec + this.Config.interval;
+      // check interval.
+      if(this.Config.interval > 0){
 
-        if(this.Config.interval > 0) this.Config.elapsedTime += this.Config.interval;
+        // check update or last.
+        if(this.Config.state.updating){
 
-        this.Config.countDiffObj      = JS_COUNT_MODULE.ParseTime2DateObj(this.Config.countDiffMilliSec);
-        this.Config.countDiffListObj  = JS_COUNT_MODULE.ParseTime2DateListObj(this.Config.countDiffMilliSec);
-      } else {
-        // Down.
-        this.Config.countDiffMilliSec = this.Config.countDiffMilliSec - this.Config.interval;
+          if(this.Config.interval > 0) this.Config.elapsedTime += this.Config.interval;
 
-        if(this.Config.interval > 0) this.Config.elapsedTime += this.Config.interval;
+          // count down.
+          if(this.Config.type == 'up'){
+            // Up.
+            this.Config.countDiffMilliSec = this.Config.countDiffMilliSec + this.Config.interval;
+          } else {
+            // Down.
+            this.Config.countDiffMilliSec = this.Config.countDiffMilliSec - this.Config.interval;
+          }
 
-        if(this.Config.countDiffMilliSec < this.Config.equalRacio){
-          if(this.Config.data.length) this.UpdateData();
+          this.Update();
+
         }
 
-        this.Config.countDiffObj      = JS_COUNT_MODULE.ParseTime2DateObj(this.Config.countDiffMilliSec);
-        this.Config.countDiffListObj  = JS_COUNT_MODULE.ParseTime2DateListObj(this.Config.countDiffMilliSec);
-      }
-
-      this.OnComplete();
-
-      if(this.Config.interval > 0){
-        this.Update();
       }
     }, this.Config.interval);
+
   }
 
-  OnComplete(){
+  OnUpdate(){
     let _obj = {
+      updating     : this.Config.state.updating,
       date         : this.Config.date,
-      complete     : this.Config.complete,
+      onUpdate     : this.Config.onUpdate,
+      onComplete   : this.Config.onComplete,
       diffObj      : this.Config.countDiffListObj,
       diffObjParsed: this.Config.countDiffObj,
       diffMilliSec : this.Config.countDiffMilliSec,
       elapsedTime  : this.Config.elapsedTime
     };
-    if(this.Config.complete){
-      this.Config.complete(_obj);
+    if(this.Config.onUpdate){
+      this.Config.onUpdate(_obj);
+    }
+  }
+
+  OnComplete(){
+    let _obj = {
+      updating     : this.Config.state.updating,
+      date         : this.Config.date,
+      onUpdate     : this.Config.onUpdate,
+      onComplete   : this.Config.onComplete,
+      diffObj      : this.Config.countDiffListObj,
+      diffObjParsed: this.Config.countDiffObj,
+      diffMilliSec : this.Config.countDiffMilliSec,
+      elapsedTime  : this.Config.elapsedTime
+    };
+    if(this.Config.onComplete){
+      this.Config.onComplete(_obj);
+    }
+  }
+
+  checkEndstop(){
+    if(this.Config.type !== 'up'){
+      if(this.Config.endstop){
+        this.Config.state.updating = false;
+        if(this.Config.countDiffMilliSec > 0) this.Config.state.updating = true;
+      } else {
+        this.Config.state.updating = true;
+      }
     }
   }
 
