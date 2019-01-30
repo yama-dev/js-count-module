@@ -1,6 +1,28 @@
+const pkg = require('./package.json');
+
+const comment = `JS COUNT MODULE (JavaScript Library)
+  ${pkg.name}
+Version ${pkg.version}
+Repository ${pkg.repository.url}
+Copyright ${pkg.author}
+Licensed ${pkg.license}`;
+
 const env = process.env.NODE_ENV;
 
 const webpack = require('webpack');
+
+const webpackPlugEnv = new webpack.EnvironmentPlugin({
+  NODE_ENV: 'development',
+  DEBUG: false
+});
+
+const webpackPlugBnr = new webpack.BannerPlugin({
+  banner: comment,
+});
+
+const babelPlugin = [
+  '@babel/plugin-transform-object-assign'
+];
 
 const config = {
   mode: env || 'development',
@@ -34,12 +56,16 @@ const config = {
                 }
               ]
             ],
-            plugins: ['@babel/plugin-transform-object-assign']
+            plugins: babelPlugin
           }
         }
       }
     ]
-  }
+  },
+  plugins: [
+    webpackPlugEnv,
+    webpackPlugBnr
+  ]
 };
 
 module.exports = config;
