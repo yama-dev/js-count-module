@@ -119,10 +119,10 @@ export default class JS_COUNT_MODULE {
 
   Update(){
 
+    if(this.Config.elapsedTime > 0) this.checkEndstop();
+
     this.Config.countDiffObj     = JS_COUNT_MODULE.ParseTime2DateObj(this.Config.countDiffMilliSec);
     this.Config.countDiffListObj = JS_COUNT_MODULE.ParseTime2DateListObj(this.Config.countDiffMilliSec);
-
-    if(this.Config.elapsedTime > 0) this.checkEndstop();
 
     // check update or last.
     if(this.Config.state.updating){
@@ -202,7 +202,11 @@ export default class JS_COUNT_MODULE {
     if(this.Config.type !== 'up'){
       if(this.Config.endstop){
         this.Config.state.updating = false;
-        if(this.Config.countDiffMilliSec > 0) this.Config.state.updating = true;
+        if(this.Config.countDiffMilliSec > 0){
+          this.Config.state.updating = true;
+        } else {
+          this.Config.countDiffMilliSec = 0;
+        }
       } else {
         this.Config.state.updating = true;
       }
