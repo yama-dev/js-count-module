@@ -119,7 +119,7 @@ export default class JS_COUNT_MODULE {
 
   Update(){
 
-    if(this.Config.elapsedTime > 0) this.checkEndstop();
+    if(this.Config.elapsedTime >= 0) this.checkEndstop();
 
     this.Config.countDiffObj     = JS_COUNT_MODULE.ParseTime2DateObj(this.Config.countDiffMilliSec);
     this.Config.countDiffListObj = JS_COUNT_MODULE.ParseTime2DateListObj(this.Config.countDiffMilliSec);
