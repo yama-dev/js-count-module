@@ -1,5 +1,5 @@
 {
-  "name": "js-count-module",
+  "name": "@yama-dev/js-count-module",
   "version": "0.1.3",
   "description": "utility that can implement count operation.\ncan flexibly count the deadline.",
   "keywords": [
