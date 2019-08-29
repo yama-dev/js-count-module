@@ -1,6 +1,6 @@
 /*eslint no-console: "off"*/
 
-export default class JS_COUNT_MODULE {
+export class JS_COUNT_MODULE {
 
   constructor(options={}){
     let configDefault = {
@@ -56,12 +56,18 @@ export default class JS_COUNT_MODULE {
           onComplete: this.Config.onComplete
         }
       ];
-      this.UpdateData();
-    } else {
-      this.UpdateData();
     }
 
-    if(this.Config.autostart && this.Config.interval > 0) this.Update();
+    // SetModule.
+    if(document.readyState == 'complete' || document.readyState == 'interactive'){
+      this._updateData();
+      if(this.Config.autostart) this.Update();
+    } else {
+      document.addEventListener('DOMContentLoaded', () => {
+        this._updateData();
+        if(this.Config.autostart) this.Update();
+      });
+    }
 
   }
 
