@@ -229,19 +229,42 @@ export class JS_COUNT_MODULE {
     }
   }
 
-  checkEndstop(){
-    if(this.Config.type !== 'up'){
-      if(this.Config.endstop){
-        this.Config.state.updating = false;
-        if(this.Config.countDiffMilliSec > 0){
-          this.Config.state.updating = true;
-        } else {
-          this.Config.countDiffMilliSec = 0;
-        }
-      } else {
-        this.Config.state.updating = true;
+  start(d = this.Config.nowObj){
+    this.Config.state.updating = true;
+
+    if(!this.Config.state.pause){
+      if(this.Config.type == 'down'){
+        this.Config.nowObjFix = d;
+        this.Config.elapsedTime = 0;
       }
+      if(this.Config.type == 'up'){
+        this.Config.nowObj.setTime(1);
+        this.Config.date = this.Config.nowObj.getTime();
+      }
+    } else {
+      this.Config.state.pause = false;
     }
+
+    this._updateData();
+
+    this.Update();
   }
 
+  pause(){
+    this.Config.state.updating = false;
+    this.Config.state.pause = true;
+    clearTimeout(this.instance);
+  }
+
+  stop(){
+    this.Config.state.updating = false;
+    clearTimeout(this.instance);
+  }
+
+  destroy(){
+    this.Config.state.updating = false;
+    clearTimeout(this.instance);
+    this.instance = null;
+    this.Config = null;
+  }
 }
