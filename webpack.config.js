@@ -26,12 +26,12 @@ const babelPlugin = [
 
 const config = {
   mode: env || 'development',
-  entry: ['./src/js-count-module.js'],
+  entry: {
+    'js-count-module': './src/js-count-module.js',
+  },
   output: {
     path: `${__dirname}/dist`,
-    filename: 'js-count-module.js',
-    library: 'JS_COUNT_MODULE',
-    libraryExport: 'default',
+    filename: '[name].js',
     libraryTarget: 'umd'
   },
   module: {
