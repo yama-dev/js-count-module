@@ -24,19 +24,28 @@ export class JS_COUNT_MODULE {
       elapsedTime: 0,
 
       state: {
-        updating: true
+        updating: true,
+        pause: false
       }
     };
 
     // Merge Config Settings.
     this.Config = Object.assign(configDefault, options);
 
-    // newObjの値を修正
-    if(!this.Config.nowObj) this.Config.nowObj = new Date();
+    // Adjust interval count time.
+    if(this.Config.interval < 1) this.Config.interval = 1;
 
+    // Adjust newObj.
+    if(this.Config.nowObj){
+      this.Config.nowObjFix = this.Config.nowObj;
+    } else {
+      this.Config.nowObjFix = new Date();
+    }
+
+    // For Countup type.
     if(this.Config.type == 'up'){
-      this.Config.nowObj.setTime(1);
-      this.Config.date = this.Config.nowObj.getTime();
+      this.Config.nowObjFix.setTime(1);
+      this.Config.date = this.Config.nowObjFix.getTime();
     }
 
     if(!this.Config.data.length && !this.Config.date){
@@ -48,6 +57,7 @@ export class JS_COUNT_MODULE {
       return false;
     }
 
+    // Convert data string to array.
     if(!this.Config.data.length){
       this.Config.data = [
         {
@@ -101,8 +111,23 @@ export class JS_COUNT_MODULE {
     return _obj;
   }
 
-  UpdateData(){
-    let _t = this.Config.nowObj.getTime() + this.Config.elapsedTime;
+  _checkEndstop(){
+    if(this.Config.type !== 'up'){
+      if(this.Config.endstop){
+        this.Config.state.updating = false;
+        if(this.Config.countDiffMilliSec > 0){
+          this.Config.state.updating = true;
+        } else {
+          this.Config.countDiffMilliSec = 0;
+        }
+      } else {
+        this.Config.state.updating = true;
+      }
+    }
+  }
+
+  _updateData(){
+    let _t = this.Config.nowObjFix.getTime() + this.Config.elapsedTime;
     this.Config.setObj.setTime(_t);
 
     let _flg = false;
@@ -125,7 +150,7 @@ export class JS_COUNT_MODULE {
 
   Update(){
 
-    if(this.Config.elapsedTime >= 0) this.checkEndstop();
+    if(this.Config.elapsedTime >= 0) this._checkEndstop();
 
     this.Config.countDiffObj     = JS_COUNT_MODULE.ParseTime2DateObj(this.Config.countDiffMilliSec);
     this.Config.countDiffListObj = JS_COUNT_MODULE.ParseTime2DateListObj(this.Config.countDiffMilliSec);
@@ -140,11 +165,11 @@ export class JS_COUNT_MODULE {
 
     // Update Data.
     if(this.Config.countDiffMilliSec <= 0 && this.Config.data.length){
-      this.UpdateData();
-      this.checkEndstop();
+      this._updateData();
+      this._checkEndstop();
     }
 
-    setTimeout(()=>{
+    this.instance = setTimeout(()=>{
 
       // check interval.
       if(this.Config.interval > 0){
