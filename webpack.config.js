@@ -1,11 +1,6 @@
 const pkg = require('./package.json');
 
-const comment = `JS COUNT MODULE (JavaScript Library)
-  ${pkg.name}
-Version ${pkg.version}
-Repository ${pkg.repository.url}
-Copyright ${pkg.author}
-Licensed ${pkg.license}`;
+const comment = `@${pkg.author}/${pkg.name} version:${pkg.version} repository:${pkg.repository.url} copyright:${pkg.author} licensed:${pkg.license}`;
 
 const env = process.env.NODE_ENV;
 
