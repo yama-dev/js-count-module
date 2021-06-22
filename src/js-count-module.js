@@ -104,6 +104,10 @@ export class JS_COUNT_MODULE {
 
   }
 
+  static PadStart(str,length=2,padString='0'){
+    return String(str).padStart(length, padString);
+  }
+
   static ParseTime2DateObj (time){
     let _time = time;
     let _obj = {};
@@ -112,8 +116,10 @@ export class JS_COUNT_MODULE {
     _obj.h = Math.floor(_time / ( 1000 * 60 * 60 ));
     _time = _time % ( 1000 * 60 * 60 );
     _obj.m = Math.floor(_time / ( 1000 * 60 ));
+    _obj.mm = JS_COUNT_MODULE.PadStart(_obj.m,2,'0');
     _time = _time % ( 1000 * 60 );
     _obj.s = Math.floor(_time / ( 1000 ));
+    _obj.ss = JS_COUNT_MODULE.PadStart(_obj.s,2,'0');
     _time = _time % ( 1000 );
     _obj.ms = _time;
     return _obj;
