@@ -155,6 +155,7 @@ export class JS_COUNT_MODULE {
     }
   }
 
+  // set date data when start & finish.
   _updateData(){
     let _t = this.config.nowObjFix.getTime() + this.config.elapsedTime;
     this.config.setObj.setTime(_t);
@@ -258,7 +259,7 @@ export class JS_COUNT_MODULE {
     }
   }
 
-  start(d = this.config.nowObj){
+  start(d = this.config.nowObjFix){
     this.config.state.updating = true;
 
     if(!this.config.state.pause){
