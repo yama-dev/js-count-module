@@ -49,6 +49,8 @@ export class JS_COUNT_MODULE {
       }
     };
 
+    this.timer = null;
+
     // Merge Config Settings.
     this.config = {
       ...configDefault,
@@ -67,17 +69,16 @@ export class JS_COUNT_MODULE {
 
     // For Countup type.
     if(this.config.type == 'up'){
-      this.config.nowObjFix.setTime(1);
-      this.config.date = this.config.nowObjFix.getTime();
-    }
-
-    if(!this.config.data.length && !this.config.date){
-      try {
-        throw new Error('Not config "date"');
-      } catch (e) {
-        console.log(e.name + ': ' + e.message);
+      this.config.nowObjFix = new Date();
+    } else {
+      if(!this.config.data.length && !this.config.date){
+        try {
+          throw new Error('Not config "date"');
+        } catch (e) {
+          console.log(e.name + ': ' + e.message);
+        }
+        return false;
       }
-      return false;
     }
 
     // Convert data string to array.
@@ -178,7 +179,22 @@ export class JS_COUNT_MODULE {
     });
   }
 
+  _update(){
+    let _diffMilliSec  = new Date(this.config.date).getTime() - this.config.setObj.getTime();
+
+    this.config.elapsedTime = Date.now() - this.config.nowObjFix.getTime();
+
+    // count down.
+    if(this.config.type == 'up'){
+      // Up.
+      this.config.countDiffMilliSec = this.config.elapsedTime;
+    } else {
+      // Down.
+      this.config.countDiffMilliSec = _diffMilliSec - this.config.elapsedTime;
+    }
+  }
   Update(){
+    clearTimeout(this.timer);
 
     if(this.config.elapsedTime >= 0) this._checkEndstop();
 
@@ -199,29 +215,11 @@ export class JS_COUNT_MODULE {
       this._checkEndstop();
     }
 
-    this.instance = setTimeout(()=>{
-
-      // check interval.
-      if(this.config.interval > 0){
-
-        // check update or last.
-        if(this.config.state.updating){
-
-          if(this.config.interval > 0) this.config.elapsedTime += this.config.interval;
-
-          // count down.
-          if(this.config.type == 'up'){
-            // Up.
-            this.config.countDiffMilliSec = this.config.countDiffMilliSec + this.config.interval;
-          } else {
-            // Down.
-            this.config.countDiffMilliSec = this.config.countDiffMilliSec - this.config.interval;
-          }
-
-          this.Update();
-
-        }
-
+    this.timer = setTimeout(()=>{
+      // check update or last.
+      if(this.config.state.updating){
+        this._update();
+        this.Update();
       }
     }, this.config.interval);
 
@@ -265,10 +263,11 @@ export class JS_COUNT_MODULE {
     if(!this.config.state.pause){
       if(this.config.type == 'down'){
         this.config.nowObjFix = d;
-        this.config.elapsedTime = 0;
       }
       if(this.config.type == 'up'){
-        this.config.nowObj.setTime(1);
+        let _elapsedTime = Date.now() - this.config.nowObjFix.getTime();
+
+        this.config.nowObjFix = new Date(d.getTime() + _elapsedTime - this.config.elapsedTime);
         this.config.date = this.config.nowObj.getTime();
       }
     } else {
@@ -277,24 +276,25 @@ export class JS_COUNT_MODULE {
 
     this._updateData();
 
+    this._update();
     this.Update();
   }
 
   pause(){
     this.config.state.updating = false;
     this.config.state.pause = true;
-    clearTimeout(this.instance);
+    clearTimeout(this.timer);
   }
 
   stop(){
     this.config.state.updating = false;
-    clearTimeout(this.instance);
+    clearTimeout(this.timer);
   }
 
   destroy(){
     this.config.state.updating = false;
-    clearTimeout(this.instance);
-    this.instance = null;
+    clearTimeout(this.timer);
+    this.timer = null;
     this.config = null;
   }
 }
