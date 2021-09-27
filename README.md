@@ -17,7 +17,7 @@ can flexibly count the deadline.
 
 ## Installation,Download
 
-- Standalone(CDN) -> [https://cdn.jsdelivr.net/gh/yama-dev/js-count-module@v0.2.1/dist/js-count-module.js](https://cdn.jsdelivr.net/gh/yama-dev/js-count-module@v0.2.1/dist/js-count-module.js)
+- Standalone(CDN) -> [https://cdn.jsdelivr.net/gh/yama-dev/js-count-module@v0.3.1/dist/js-count-module.js](https://cdn.jsdelivr.net/gh/yama-dev/js-count-module@v0.3.1/dist/js-count-module.js)
 
 <br>
 
@@ -27,12 +27,12 @@ can flexibly count the deadline.
 
 ``` bash
 # install npm.
-npm install --save-dev js-count-module
+npm install --save-dev @yama-dev/js-count-module
 ```
 
 ``` javascript
 // import.
-import COUNT_MODULE from 'js-count-module';
+import COUNT_MODULE from '@yama-dev/js-count-module';
 ```
 
 ### Basic Standalone Usage
