@@ -68,9 +68,10 @@
         var locationHash = location.hash.replace('#','');
         timeNowObj = new Date(decodeURI(locationHash));
       }
-      new JS_COUNT_MODULE({
+      var JCM = new JS_COUNT_MODULE({
         nowObj: timeNowObj,
         date: '2022/1/10 10:00',
+        interval: 1000,
         onUpdate: function(data){
           console.log(data);
           var _d = data.diffObjParsed;
