@@ -115,6 +115,7 @@ export class JS_COUNT_MODULE {
     _obj.d = Math.floor(_time / ( 1000 * 60 * 60 * 24 ));
     _time = _time % ( 1000 * 60 * 60 * 24 );
     _obj.h = Math.floor(_time / ( 1000 * 60 * 60 ));
+    _obj.hh = JS_COUNT_MODULE.PadStart(_obj.h,2,'0');
     _time = _time % ( 1000 * 60 * 60 );
     _obj.m = Math.floor(_time / ( 1000 * 60 ));
     _obj.mm = JS_COUNT_MODULE.PadStart(_obj.m,2,'0');

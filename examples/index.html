@@ -75,13 +75,13 @@
         onUpdate: function(data){
           console.log(data);
           var _d = data.diffObjParsed;
-          var _t = data.diffMilliSec+' [ms]<br>'+_d.d+'[日] '+_d.h+'[時間] '+_d.m+'[分] '+_d.s+'[秒]';
+          var _t = data.diffMilliSec+' [ms]<br>'+_d.d+'[日] '+_d.hh+'[時間] '+_d.mm+'[分] '+_d.ss+'[秒]';
           dom.setHtml(dom.selectDom('.p-result'), _t);
         },
         onComplete: function(data){
           console.log(data);
           var _d = data.diffObjParsed;
-          var _t = data.diffMilliSec+' [ms]<br>'+_d.d+'[日] '+_d.h+'[時間] '+_d.m+'[分] '+_d.s+'[秒]';
+          var _t = data.diffMilliSec+' [ms]<br>'+_d.d+'[日] '+_d.hh+'[時間] '+_d.mm+'[分] '+_d.ss+'[秒]';
           dom.setHtml(dom.selectDom('.p-result'), _t);
         }
       });
