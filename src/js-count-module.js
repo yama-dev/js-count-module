@@ -8,6 +8,7 @@ export class JS_COUNT_MODULE {
       interval: 1000,     // interval time [ms]
       autostart: true,    // auto count start flg.
       nowObj: new Date(), // now Date object.
+      nowObjFix: null,    // now Date object.
       data: [],           // 'date' and 'complete' for array.
       endstop: true,
 
@@ -26,7 +27,7 @@ export class JS_COUNT_MODULE {
 
     // Don't Overwrite
     this.state = {
-        updating: true,
+      updating: true,
       pause: false,
       startTimeObj: new Date(), // now Date object.
     };
@@ -163,9 +164,14 @@ export class JS_COUNT_MODULE {
   }
 
   _update(){
+    // 設定時刻と終了時刻の差を取得 [ms]
     let _diffMilliSec  = new Date(this.config.date).getTime() - this.config.setObj.getTime();
 
-    this.config.elapsedTime = Date.now() - this.config.nowObjFix.getTime();
+    // 実際にスタートした時間と、nowObjに設定した現時刻の差を確認
+    let _diffStartMSec = this.config.nowObjFix.getTime() - this.state.startTimeObj.getTime();
+
+    // 正確な経過時間を取得 [ms]
+    this.config.elapsedTime = Date.now() - this.config.nowObjFix.getTime() + _diffStartMSec;
 
     // count down.
     if(this.config.type == 'up'){
