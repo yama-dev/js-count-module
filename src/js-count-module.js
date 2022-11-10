@@ -1,25 +1,5 @@
 /*eslint no-console: "off"*/
 
-if (!String.prototype.padStart) {
-  Object.defineProperty(String.prototype, 'padStart', {
-    configurable: true,
-    writable: true,
-    value: function (targetLength, padString) {
-      targetLength = targetLength >> 0; //floor if number or convert non-number to 0;
-      padString = String(typeof padString !== 'undefined' ? padString : ' ');
-      if (this.length > targetLength) {
-        return String(this);
-      } else {
-        targetLength = targetLength - this.length;
-        if (targetLength > padString.length) {
-          padString += padString.repeat(targetLength / padString.length); //append to original to ensure we are longer than needed
-        }
-        return padString.slice(0, targetLength) + String(this);
-      }
-    },
-  });
-}
-
 export class JS_COUNT_MODULE {
 
   constructor(options={}){
@@ -28,6 +8,7 @@ export class JS_COUNT_MODULE {
       interval: 1000,     // interval time [ms]
       autostart: true,    // auto count start flg.
       nowObj: new Date(), // now Date object.
+      nowObjFix: null,    // now Date object.
       data: [],           // 'date' and 'complete' for array.
       endstop: true,
 
@@ -42,11 +23,13 @@ export class JS_COUNT_MODULE {
       equalRacio: 0,
       setObj: new Date(),
       elapsedTime: 0,
+    };
 
-      state: {
-        updating: true,
-        pause: false
-      }
+    // Don't Overwrite
+    this.state = {
+      updating: true,
+      pause: false,
+      startTimeObj: new Date(), // now Date object.
     };
 
     this.timer = null;
@@ -145,14 +128,14 @@ export class JS_COUNT_MODULE {
   _checkEndstop(){
     if(this.config.type !== 'up'){
       if(this.config.endstop){
-        this.config.state.updating = false;
+        this.state.updating = false;
         if(this.config.countDiffMilliSec > 0){
-          this.config.state.updating = true;
+          this.state.updating = true;
         } else {
           this.config.countDiffMilliSec = 0;
         }
       } else {
-        this.config.state.updating = true;
+        this.state.updating = true;
       }
     }
   }
@@ -181,9 +164,14 @@ export class JS_COUNT_MODULE {
   }
 
   _update(){
+    // 設定時刻と終了時刻の差を取得 [ms]
     let _diffMilliSec  = new Date(this.config.date).getTime() - this.config.setObj.getTime();
 
-    this.config.elapsedTime = Date.now() - this.config.nowObjFix.getTime();
+    // 実際にスタートした時間と、nowObjに設定した現時刻の差を確認
+    let _diffStartMSec = this.config.nowObjFix.getTime() - this.state.startTimeObj.getTime();
+
+    // 正確な経過時間を取得 [ms]
+    this.config.elapsedTime = Date.now() - this.config.nowObjFix.getTime() + _diffStartMSec;
 
     // count down.
     if(this.config.type == 'up'){
@@ -203,7 +191,7 @@ export class JS_COUNT_MODULE {
     this.config.countDiffListObj = JS_COUNT_MODULE.ParseTime2DateListObj(this.config.countDiffMilliSec);
 
     // check update or last.
-    if(this.config.state.updating){
+    if(this.state.updating){
       this.OnUpdate();
     } else {
       this.OnUpdate();
@@ -218,7 +206,7 @@ export class JS_COUNT_MODULE {
 
     this.timer = setTimeout(()=>{
       // check update or last.
-      if(this.config.state.updating){
+      if(this.state.updating){
         this._update();
         this.Update();
       }
@@ -228,7 +216,7 @@ export class JS_COUNT_MODULE {
 
   OnUpdate(){
     let _obj = {
-      updating     : this.config.state.updating,
+      updating     : this.state.updating,
       date         : this.config.date,
       onUpdate     : this.config.onUpdate,
       onComplete   : this.config.onComplete,
@@ -244,7 +232,7 @@ export class JS_COUNT_MODULE {
 
   OnComplete(){
     let _obj = {
-      updating     : this.config.state.updating,
+      updating     : this.state.updating,
       date         : this.config.date,
       onUpdate     : this.config.onUpdate,
       onComplete   : this.config.onComplete,
@@ -259,9 +247,9 @@ export class JS_COUNT_MODULE {
   }
 
   start(d = this.config.nowObjFix){
-    this.config.state.updating = true;
+    this.state.updating = true;
 
-    if(!this.config.state.pause){
+    if(!this.state.pause){
       if(this.config.type == 'down'){
         this.config.nowObjFix = d;
       }
@@ -272,7 +260,7 @@ export class JS_COUNT_MODULE {
         this.config.date = this.config.nowObj.getTime();
       }
     } else {
-      this.config.state.pause = false;
+      this.state.pause = false;
     }
 
     this._updateData();
@@ -282,18 +270,18 @@ export class JS_COUNT_MODULE {
   }
 
   pause(){
-    this.config.state.updating = false;
-    this.config.state.pause = true;
+    this.state.updating = false;
+    this.state.pause = true;
     clearTimeout(this.timer);
   }
 
   stop(){
-    this.config.state.updating = false;
+    this.state.updating = false;
     clearTimeout(this.timer);
   }
 
   destroy(){
-    this.config.state.updating = false;
+    this.state.updating = false;
     clearTimeout(this.timer);
     this.timer = null;
     this.config = null;

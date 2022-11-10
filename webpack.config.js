@@ -16,7 +16,6 @@ const webpackPlugBnr = new webpack.BannerPlugin({
 });
 
 const babelPlugin = [
-  '@babel/plugin-transform-object-assign'
 ];
 
 const config = {
