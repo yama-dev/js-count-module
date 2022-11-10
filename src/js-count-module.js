@@ -1,25 +1,5 @@
 /*eslint no-console: "off"*/
 
-if (!String.prototype.padStart) {
-  Object.defineProperty(String.prototype, 'padStart', {
-    configurable: true,
-    writable: true,
-    value: function (targetLength, padString) {
-      targetLength = targetLength >> 0; //floor if number or convert non-number to 0;
-      padString = String(typeof padString !== 'undefined' ? padString : ' ');
-      if (this.length > targetLength) {
-        return String(this);
-      } else {
-        targetLength = targetLength - this.length;
-        if (targetLength > padString.length) {
-          padString += padString.repeat(targetLength / padString.length); //append to original to ensure we are longer than needed
-        }
-        return padString.slice(0, targetLength) + String(this);
-      }
-    },
-  });
-}
-
 export class JS_COUNT_MODULE {
 
   constructor(options={}){
