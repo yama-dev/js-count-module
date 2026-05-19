@@ -17,7 +17,7 @@ can flexibly count the deadline.
 
 ## Installation,Download
 
-- Standalone(CDN) -> [https://cdn.jsdelivr.net/gh/yama-dev/js-count-module@v0.3.2/dist/js-count-module.js](https://cdn.jsdelivr.net/gh/yama-dev/js-count-module@v0.3.2/dist/js-count-module.js)
+- Standalone(CDN) -> [https://cdn.jsdelivr.net/gh/yama-dev/js-count-module@v0.4.0/dist/js-count-module.global.js](https://cdn.jsdelivr.net/gh/yama-dev/js-count-module@v0.4.0/dist/js-count-module.global.js)
 
 <br>
 
@@ -26,19 +26,25 @@ can flexibly count the deadline.
 ### NPM Usage
 
 ``` bash
-# install npm.
-npm install --save-dev @yama-dev/js-count-module
+# install npm package.
+npm install @yama-dev/js-count-module
 ```
 
 ``` javascript
-// import.
+// ESM default import.
 import COUNT_MODULE from '@yama-dev/js-count-module';
+
+// ESM named import.
+import { JS_COUNT_MODULE } from '@yama-dev/js-count-module';
+
+// CommonJS require.
+const { JS_COUNT_MODULE } = require('@yama-dev/js-count-module');
 ```
 
 ### Basic Standalone Usage
 
 ``` html
-<script src="./js-count-module.js"></script>
+<script src="./js-count-module.global.js"></script>
 <script>
   new JS_COUNT_MODULE({
     date: '2022/1/10 10:00',
@@ -60,6 +66,18 @@ import COUNT_MODULE from '@yama-dev/js-count-module';
 
 none
 
+<br>
+
+## Development
+
+``` bash
+npm install
+npm run dev
+```
+
+Open `http://127.0.0.1:8000/examples/` to check the demo while editing.  
+Use `npm run build` to generate minified `dist/js-count-module.cjs`, `dist/js-count-module.mjs`, and `dist/js-count-module.global.js`.
+
 <br><br><br>
 
 ___
@@ -75,4 +93,3 @@ ___
 ## Author
 
 [yama-dev](https://github.com/yama-dev)
-

@@ -1,6 +1,6 @@
 {
   "name": "@yama-dev/js-count-module",
-  "version": "0.3.3",
+  "version": "0.4.0",
   "description": "utility that can implement count operation.\ncan flexibly count the deadline.",
   "keywords": [
     "count",
@@ -11,16 +11,22 @@
   ],
   "author": "yama-dev",
   "license": "MIT",
-  "main": "./dist/js-count-module.js",
+  "main": "./dist/js-count-module.cjs",
+  "module": "./dist/js-count-module.mjs",
+  "exports": {
+    ".": {
+      "import": "./dist/js-count-module.mjs",
+      "require": "./dist/js-count-module.cjs",
+      "default": "./dist/js-count-module.mjs"
+    }
+  },
+  "unpkg": "./dist/js-count-module.global.js",
+  "jsdelivr": "./dist/js-count-module.global.js",
   "scripts": {
-    "start": "npm install && npm run develop",
-    "develop": "npm-run-all -p build:develop server:develop",
-    "server:develop": "browser-sync start --server ./ --directory ./sample --files **/*.css **/*.js **/*.html",
-    "build:develop": "webpack --mode=development --progress --colors --watch",
-    "production": "npm-run-all -p build:production server:production",
-    "server:production": "browser-sync start --server ./ --directory ./sample --files **/*.css **/*.js **/*.html",
-    "build:production": "webpack --mode=production --progress --colors --watch",
-    "test": "mocha --compilers js:babel-core/register"
+    "start": "npm run dev",
+    "dev": "node scripts/dev.js",
+    "build": "node scripts/build.js",
+    "test": "echo \"No tests yet\""
   },
   "repository": {
     "type": "git",
@@ -30,22 +36,9 @@
     "url": "https://github.com/yama-dev/js-count-module/issues"
   },
   "devDependencies": {
-    "@babel/cli": "^7.5.5",
-    "@babel/core": "^7.5.5",
-    "@babel/preset-env": "^7.5.5",
-    "babel-loader": "^8.0.6",
-    "browser-sync": "^2.26.7",
+    "esbuild": "^0.25.5",
     "eslint": "^6.2.2",
-    "eslint-loader": "^3.0.0",
-    "mocha": "^6.2.0",
-    "npm-run-all": "^4.1.5",
-    "webpack": "^4.39.3",
-    "webpack-cli": "^3.3.7"
-  },
-  "babel": {
-    "presets": [
-      "@babel/preset-env"
-    ]
+    "mocha": "^6.2.0"
   },
   "eslintConfig": {
     "env": {

@@ -287,3 +287,5 @@ export class JS_COUNT_MODULE {
     this.config = null;
   }
 }
+
+export default JS_COUNT_MODULE;
