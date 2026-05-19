@@ -23,6 +23,11 @@ export class JS_COUNT_MODULE {
       equalRacio: 0,
       setObj: new Date(),
       elapsedTime: 0,
+      excludePeriods: [],
+      excludePeriodsNormalized: {
+        daily: [],
+        absolute: [],
+      },
     };
 
     // Don't Overwrite
@@ -49,6 +54,8 @@ export class JS_COUNT_MODULE {
     } else {
       this.config.nowObjFix = new Date();
     }
+
+    this.config.excludePeriodsNormalized = JS_COUNT_MODULE.NormalizeExcludePeriods(this.config.excludePeriods);
 
     // For Countup type.
     if(this.config.type == 'up'){
@@ -125,6 +132,186 @@ export class JS_COUNT_MODULE {
     return _obj;
   }
 
+  static GetDayMilliSec(){
+    return 1000 * 60 * 60 * 24;
+  }
+
+  static IsDailyTimeFormat(value){
+    return /^\d{1,2}:\d{2}(:\d{2})?$/.test(String(value).trim());
+  }
+
+  static ParseDailyTime(value){
+    let _value = String(value).trim();
+    let _list = _value.split(':').map((item) => Number(item));
+
+    if(_list.some((item) => Number.isNaN(item))){
+      return null;
+    }
+
+    let _h = _list[0];
+    let _m = _list[1];
+    let _s = _list[2] || 0;
+
+    if(_h < 0 || _h > 23) return null;
+    if(_m < 0 || _m > 59) return null;
+    if(_s < 0 || _s > 59) return null;
+
+    return ((_h * 60 * 60) + (_m * 60) + _s) * 1000;
+  }
+
+  static ParseDateTime(value){
+    let _time = new Date(value).getTime();
+    if(Number.isNaN(_time)){
+      return null;
+    }
+    return _time;
+  }
+
+  static NormalizeTimeRanges(list=[]){
+    let _list = list
+      .filter((item) => item && item.start < item.end)
+      .sort((a,b) => a.start - b.start);
+
+    return _list.reduce((result, item) => {
+      let _last = result[result.length - 1];
+
+      if(!_last || item.start > _last.end){
+        result.push({
+          start: item.start,
+          end: item.end,
+        });
+      } else if(item.end > _last.end){
+        _last.end = item.end;
+      }
+
+      return result;
+    }, []);
+  }
+
+  static NormalizeExcludePeriods(periods=[]){
+    let _result = {
+      daily: [],
+      absolute: [],
+    };
+
+    if(!Array.isArray(periods)){
+      return _result;
+    }
+
+    periods.forEach((item) => {
+      if(!item || !item.start || !item.end){
+        return;
+      }
+
+      let _isDailyStart = JS_COUNT_MODULE.IsDailyTimeFormat(item.start);
+      let _isDailyEnd = JS_COUNT_MODULE.IsDailyTimeFormat(item.end);
+
+      if(_isDailyStart && _isDailyEnd){
+        let _start = JS_COUNT_MODULE.ParseDailyTime(item.start);
+        let _end = JS_COUNT_MODULE.ParseDailyTime(item.end);
+
+        if(_start === null || _end === null || _start >= _end){
+          return;
+        }
+
+        _result.daily.push({
+          start: _start,
+          end: _end,
+        });
+        return;
+      }
+
+      if(_isDailyStart || _isDailyEnd){
+        return;
+      }
+
+      let _start = JS_COUNT_MODULE.ParseDateTime(item.start);
+      let _end = JS_COUNT_MODULE.ParseDateTime(item.end);
+
+      if(_start === null || _end === null || _start >= _end){
+        return;
+      }
+
+      _result.absolute.push({
+        start: _start,
+        end: _end,
+      });
+    });
+
+    _result.daily = JS_COUNT_MODULE.NormalizeTimeRanges(_result.daily);
+    _result.absolute = JS_COUNT_MODULE.NormalizeTimeRanges(_result.absolute);
+
+    return _result;
+  }
+
+  static GetStartOfDay(time){
+    let _date = new Date(time);
+    return new Date(_date.getFullYear(), _date.getMonth(), _date.getDate()).getTime();
+  }
+
+  static GetRangeOverlap(startA, endA, startB, endB){
+    let _start = Math.max(startA, startB);
+    let _end = Math.min(endA, endB);
+    return Math.max(0, _end - _start);
+  }
+
+  static GetAbsoluteExcludedMilliSec(startTime, endTime, absolutePeriods=[]){
+    if(endTime <= startTime){
+      return 0;
+    }
+
+    return absolutePeriods.reduce((total, item) => {
+      return total + JS_COUNT_MODULE.GetRangeOverlap(startTime, endTime, item.start, item.end);
+    }, 0);
+  }
+
+  static GetDailyExcludedMilliSec(startTime, endTime, dailyPeriods=[]){
+    if(endTime <= startTime || !dailyPeriods.length){
+      return 0;
+    }
+
+    let _dayMilliSec = JS_COUNT_MODULE.GetDayMilliSec();
+    let _startDayTime = JS_COUNT_MODULE.GetStartOfDay(startTime);
+    let _endDayTime = JS_COUNT_MODULE.GetStartOfDay(endTime);
+    let _dailyTotal = dailyPeriods.reduce((total, item) => total + (item.end - item.start), 0);
+    let _count = 0;
+
+    if(_startDayTime === _endDayTime){
+      dailyPeriods.forEach((item) => {
+        _count += JS_COUNT_MODULE.GetRangeOverlap(
+          startTime,
+          endTime,
+          _startDayTime + item.start,
+          _startDayTime + item.end
+        );
+      });
+      return _count;
+    }
+
+    dailyPeriods.forEach((item) => {
+      _count += JS_COUNT_MODULE.GetRangeOverlap(
+        startTime,
+        _startDayTime + _dayMilliSec,
+        _startDayTime + item.start,
+        _startDayTime + item.end
+      );
+    });
+
+    dailyPeriods.forEach((item) => {
+      _count += JS_COUNT_MODULE.GetRangeOverlap(
+        _endDayTime,
+        endTime,
+        _endDayTime + item.start,
+        _endDayTime + item.end
+      );
+    });
+
+    let _fullDayCount = Math.max(0, Math.round((_endDayTime - _startDayTime) / _dayMilliSec) - 1);
+    _count += _fullDayCount * _dailyTotal;
+
+    return _count;
+  }
+
   _checkEndstop(){
     if(this.config.type !== 'up'){
       if(this.config.endstop){
@@ -142,8 +329,8 @@ export class JS_COUNT_MODULE {
 
   // set date data when start & finish.
   _updateData(){
-    let _t = this.config.nowObjFix.getTime() + this.config.elapsedTime;
-    this.config.setObj.setTime(_t);
+    let _nowTime = this._getCurrentTimeMilliSec();
+    this.config.setObj.setTime(_nowTime);
 
     let _flg = false;
     this.config.data.map((item)=>{
@@ -156,17 +343,45 @@ export class JS_COUNT_MODULE {
         if(item.onUpdate)   this.config.onUpdate = item.onUpdate;
         if(item.onComplete) this.config.onComplete = item.onComplete;
 
-        this.config.countDiffMilliSec = new Date(item.date) - this.config.setObj;
+        this.config.countDiffMilliSec = this._getCountDiffMilliSec(new Date(item.date).getTime(), _nowTime);
         this.config.countDiffObj      = JS_COUNT_MODULE.ParseTime2DateObj(this.config.countDiffMilliSec);
         this.config.countDiffListObj  = JS_COUNT_MODULE.ParseTime2DateListObj(this.config.countDiffMilliSec);
       }
     });
   }
 
-  _update(){
-    // 設定時刻と終了時刻の差を取得 [ms]
-    let _diffMilliSec  = new Date(this.config.date).getTime() - this.config.setObj.getTime();
+  _getCurrentTimeMilliSec(){
+    return this.config.nowObjFix.getTime() + this.config.elapsedTime;
+  }
 
+  _getExcludedMilliSec(startTime, endTime){
+    if(this.config.type === 'up'){
+      return 0;
+    }
+
+    let _periods = this.config.excludePeriodsNormalized;
+    if(!_periods){
+      return 0;
+    }
+
+    return JS_COUNT_MODULE.GetAbsoluteExcludedMilliSec(startTime, endTime, _periods.absolute)
+      + JS_COUNT_MODULE.GetDailyExcludedMilliSec(startTime, endTime, _periods.daily);
+  }
+
+  _getCountDiffMilliSec(targetTime, nowTime=this._getCurrentTimeMilliSec()){
+    if(this.config.type === 'up'){
+      return this.config.elapsedTime;
+    }
+
+    let _rawDiffMilliSec = targetTime - nowTime;
+    if(_rawDiffMilliSec <= 0){
+      return _rawDiffMilliSec;
+    }
+
+    return _rawDiffMilliSec - this._getExcludedMilliSec(nowTime, targetTime);
+  }
+
+  _update(){
     // 実際にスタートした時間と、nowObjに設定した現時刻の差を確認
     let _diffStartMSec = this.config.nowObjFix.getTime() - this.state.startTimeObj.getTime();
 
@@ -179,7 +394,9 @@ export class JS_COUNT_MODULE {
       this.config.countDiffMilliSec = this.config.elapsedTime;
     } else {
       // Down.
-      this.config.countDiffMilliSec = _diffMilliSec - this.config.elapsedTime;
+      let _nowTime = this._getCurrentTimeMilliSec();
+      this.config.setObj.setTime(_nowTime);
+      this.config.countDiffMilliSec = this._getCountDiffMilliSec(new Date(this.config.date).getTime(), _nowTime);
     }
   }
   Update(){
